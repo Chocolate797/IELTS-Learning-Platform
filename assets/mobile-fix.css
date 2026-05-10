@@ -58,42 +58,52 @@
   div[data-testid*="mode"] > div:last-child,
   div[class*="mode"] > div:last-child {
     display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
     width: 100% !important;
-  }
-
-  div[data-testid*="mode"] > div:last-child > button,
-  div[class*="mode"] > div:last-child > button {
-    flex-shrink: 0 !important;
-    padding: 8px 12px !important;
   }
 
   div.bg-gray-100.rounded-xl.p-1 {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
     gap: 4px !important;
     padding: 4px !important;
-    min-width: 100px !important;
+    min-width: 120px !important;
     width: auto !important;
   }
 
   div.bg-gray-100.rounded-xl.p-1 > button {
-    width: 100% !important;
-    min-width: 80px !important;
+    flex: 1 !important;
+    min-width: 50px !important;
     padding: 6px 8px !important;
   }
 
-  div[data-testid*="mode"] > div:last-child {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+  div[data-testid*="mode"] > div:last-child > div:first-child,
+  div[class*="mode"] > div:last-child > div:first-child {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
   }
 
-  div[data-testid*="mode"] > div:last-child > button {
+  div[data-testid*="mode"] > div:last-child > div:first-child > button,
+  div[class*="mode"] > div:last-child > div:first-child > button {
     flex: 1 !important;
     min-width: 0 !important;
-    padding: 8px 6px !important;
-    font-size: 12px !important;
+    padding: 8px 12px !important;
+  }
+
+  div[data-testid*="mode"] > div:last-child > div:last-child,
+  div[class*="mode"] > div:last-child > div:last-child {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  div[data-testid*="mode"] > div:last-child > div:last-child > button,
+  div[class*="mode"] > div:last-child > div:last-child > button {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 8px 12px !important;
   }
 }

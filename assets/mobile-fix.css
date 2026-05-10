@@ -83,15 +83,6 @@
     padding: 0.75rem 1rem !important;
   }
 
-  .mobile-absolute-fix {
-    position: static !important;
-    transform: none !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-  }
-
   .mobile-item-fix {
     position: relative !important;
     float: none !important;
@@ -148,6 +139,58 @@
   .mobile-text-base {
     font-size: 1rem !important;
   }
+
+  .mobile-header-actions {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    float: right !important;
+    z-index: 100 !important;
+    margin-right: 1rem !important;
+    margin-left: auto !important;
+  }
+
+  .mobile-header-btn {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin-left: 0.5rem !important;
+    z-index: 100 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .mobile-header-right {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+    padding-right: 1rem !important;
+    z-index: 100 !important;
+  }
+
+  [style*="position: absolute"] {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+
+  .mobile-header-container {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 0.75rem 1rem !important;
+    box-sizing: border-box !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -170,6 +213,11 @@
     width: 100% !important;
     min-width: 100% !important;
   }
+
+  .mobile-header-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
 }
 
 @media (max-width: 375px) {
@@ -182,5 +230,14 @@
   .mobile-pad-reset {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
+  }
+
+  .mobile-header-container {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .mobile-header-btn {
+    width: 32px !important;
+    height: 32px !important;
   }
 }

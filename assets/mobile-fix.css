@@ -1,0 +1,186 @@
+@media (max-width: 768px) {
+  * {
+    box-sizing: border-box !important;
+  }
+
+  html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  }
+
+  #root {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+  }
+
+  .mobile-overflow-hidden {
+    overflow-x: hidden !important;
+  }
+
+  .mobile-grid-fix {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .mobile-flex-col {
+    flex-direction: column !important;
+  }
+
+  .mobile-flex-wrap {
+    flex-wrap: wrap !important;
+  }
+
+  .mobile-w-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .mobile-mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .mobile-margin-reset {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .mobile-pad-reset {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .mobile-card-fix {
+    position: relative !important;
+    float: none !important;
+    clear: both !important;
+    width: 100% !important;
+    max-width: calc(100vw - 2rem) !important;
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .mobile-chart-container {
+    height: 200px !important;
+    min-height: 200px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .mobile-button-fix {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .mobile-absolute-fix {
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+
+  .mobile-item-fix {
+    position: relative !important;
+    float: none !important;
+    display: block !important;
+    width: 100% !important;
+    clear: both !important;
+  }
+
+  .mobile-hide {
+    display: none !important;
+  }
+
+  .mobile-show {
+    display: block !important;
+  }
+
+  .mobile-flex-show {
+    display: flex !important;
+  }
+
+  [class*="grid-cols-"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="col-span-"] {
+    grid-column: auto !important;
+  }
+
+  [class*="row-span-"] {
+    grid-row: auto !important;
+  }
+
+  .mobile-list-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .mobile-stat-card {
+    width: calc(50% - 0.5rem) !important;
+    min-width: calc(50% - 0.5rem) !important;
+  }
+
+  .mobile-center {
+    text-align: center !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .mobile-text-sm {
+    font-size: 0.875rem !important;
+  }
+
+  .mobile-text-base {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-grid-fix {
+    gap: 0.75rem !important;
+  }
+
+  .mobile-card-fix {
+    max-width: calc(100vw - 1.5rem) !important;
+    margin-left: 0.75rem !important;
+    margin-right: 0.75rem !important;
+  }
+
+  .mobile-pad-reset {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .mobile-stat-card {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .mobile-card-fix {
+    max-width: calc(100vw - 1rem) !important;
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+  }
+
+  .mobile-pad-reset {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}

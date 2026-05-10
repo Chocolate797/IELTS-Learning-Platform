@@ -17,160 +17,85 @@
     overflow-x: hidden !important;
   }
 
-  .mobile-overflow-hidden {
-    overflow-x: hidden !important;
-  }
-
-  .mobile-grid-fix {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 1rem !important;
-  }
-
-  .mobile-flex-col {
-    flex-direction: column !important;
-  }
-
-  .mobile-flex-wrap {
-    flex-wrap: wrap !important;
-  }
-
-  .mobile-w-full {
+  div[class*="header"],
+  div[class*="Header"],
+  header {
+    position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
-  }
-
-  .mobile-mx-auto {
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  .mobile-margin-reset {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-  }
-
-  .mobile-pad-reset {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-
-  .mobile-card-fix {
-    position: relative !important;
-    float: none !important;
-    clear: both !important;
-    width: 100% !important;
-    max-width: calc(100vw - 2rem) !important;
-    margin-left: 1rem !important;
-    margin-right: 1rem !important;
-    margin-bottom: 1rem !important;
-  }
-
-  .mobile-chart-container {
-    height: 200px !important;
-    min-height: 200px !important;
-    width: 100% !important;
-    overflow: hidden !important;
-  }
-
-  .mobile-button-fix {
-    width: 100% !important;
-    min-height: 48px !important;
-    padding: 0.75rem 1rem !important;
-  }
-
-  .mobile-item-fix {
-    position: relative !important;
-    float: none !important;
-    display: block !important;
-    width: 100% !important;
-    clear: both !important;
-  }
-
-  .mobile-hide {
-    display: none !important;
-  }
-
-  .mobile-show {
-    display: block !important;
-  }
-
-  .mobile-flex-show {
+    padding: 0.5rem 1rem !important;
+    margin: 0 !important;
     display: flex !important;
-  }
-
-  [class*="grid-cols-"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  [class*="col-span-"] {
-    grid-column: auto !important;
-  }
-
-  [class*="row-span-"] {
-    grid-row: auto !important;
-  }
-
-  .mobile-list-item {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-bottom: 0.75rem !important;
-  }
-
-  .mobile-stat-card {
-    width: calc(50% - 0.5rem) !important;
-    min-width: calc(50% - 0.5rem) !important;
-  }
-
-  .mobile-center {
-    text-align: center !important;
-    justify-content: center !important;
     align-items: center !important;
+    justify-content: space-between !important;
+    overflow: visible !important;
+    z-index: 50 !important;
   }
 
-  .mobile-text-sm {
-    font-size: 0.875rem !important;
+  div[class*="header"] > div:first-child,
+  div[class*="Header"] > div:first-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex-shrink: 0 !important;
   }
 
-  .mobile-text-base {
-    font-size: 1rem !important;
-  }
-
-  .mobile-header-actions {
+  div[class*="header"] > div:last-child,
+  div[class*="Header"] > div:last-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.375rem !important;
+    flex-shrink: 0 !important;
     position: relative !important;
-    top: auto !important;
-    right: auto !important;
-    float: right !important;
-    z-index: 100 !important;
-    margin-right: 1rem !important;
+    z-index: 60 !important;
     margin-left: auto !important;
   }
 
-  .mobile-header-btn {
+  button[class*="btn"],
+  button[class*="button"],
+  button[class*="Button"],
+  div[role="button"] {
     position: relative !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 40px !important;
-    height: 40px !important;
-    margin-left: 0.5rem !important;
+    flex-shrink: 0 !important;
+    z-index: 70 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    padding: 0.5rem !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .mobile-header-btn-override {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important;
     z-index: 100 !important;
     visibility: visible !important;
     opacity: 1 !important;
+    margin-left: 0.25rem !important;
+    background: rgba(255,255,255,0.95) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
   }
 
-  .mobile-header-right {
+  div[class*="actions"],
+  div[class*="Actions"] {
     position: relative !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 0.5rem !important;
-    padding-right: 1rem !important;
-    z-index: 100 !important;
+    gap: 0.375rem !important;
+    flex-shrink: 0 !important;
+    z-index: 80 !important;
   }
 
   [style*="position: absolute"] {
@@ -182,62 +107,169 @@
     transform: none !important;
   }
 
-  .mobile-header-container {
-    position: relative !important;
+  [style*="right:"],
+  [style*="left:"],
+  [style*="top:"],
+  [style*="bottom:"] {
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+  }
+
+  div[class*="tabs"],
+  div[class*="Tabs"],
+  div[class*="tab-bar"] {
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     width: 100% !important;
-    padding: 0.75rem 1rem !important;
-    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  div[class*="tabs"]::-webkit-scrollbar,
+  div[class*="Tabs"]::-webkit-scrollbar,
+  div[class*="tab-bar"]::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  div[class*="tabs"] > button,
+  div[class*="Tabs"] > button,
+  div[class*="tab-bar"] > button {
+    flex-shrink: 0 !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 8px !important;
+    font-size: 0.875rem !important;
+  }
+
+  div[class*="list"],
+  div[class*="List"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 1rem !important;
+    margin: 0 !important;
+  }
+
+  div[class*="list"] > div,
+  div[class*="List"] > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 0.5rem !important;
+    padding: 0.75rem !important;
+    border-radius: 12px !important;
+  }
+
+  [class*="grid-cols-"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="col-span-"] {
+    grid-column: auto !important;
+  }
+
+  .mobile-w-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .mobile-margin-reset {
+    margin: 0 !important;
+  }
+
+  .mobile-pad-reset {
+    padding: 0 1rem !important;
   }
 }
 
 @media (max-width: 480px) {
-  .mobile-grid-fix {
-    gap: 0.75rem !important;
+  div[class*="header"],
+  div[class*="Header"],
+  header {
+    padding: 0.375rem 0.75rem !important;
   }
 
-  .mobile-card-fix {
-    max-width: calc(100vw - 1.5rem) !important;
-    margin-left: 0.75rem !important;
-    margin-right: 0.75rem !important;
+  button[class*="btn"],
+  button[class*="button"],
+  button[class*="Button"],
+  div[role="button"] {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0.375rem !important;
   }
 
-  .mobile-pad-reset {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
+  .mobile-header-btn-override {
+    width: 32px !important;
+    height: 32px !important;
   }
 
-  .mobile-stat-card {
-    width: 100% !important;
-    min-width: 100% !important;
+  div[class*="tabs"],
+  div[class*="Tabs"],
+  div[class*="tab-bar"] {
+    padding: 0.375rem 0.75rem !important;
+    gap: 0.375rem !important;
   }
 
-  .mobile-header-btn {
-    width: 36px !important;
-    height: 36px !important;
+  div[class*="tabs"] > button,
+  div[class*="Tabs"] > button,
+  div[class*="tab-bar"] > button {
+    padding: 0.375rem 0.625rem !important;
+    font-size: 0.8125rem !important;
+  }
+
+  div[class*="list"],
+  div[class*="List"] {
+    padding: 0 0.75rem !important;
+  }
+
+  div[class*="list"] > div,
+  div[class*="List"] > div {
+    padding: 0.625rem !important;
+    margin-bottom: 0.375rem !important;
   }
 }
 
 @media (max-width: 375px) {
-  .mobile-card-fix {
-    max-width: calc(100vw - 1rem) !important;
-    margin-left: 0.5rem !important;
-    margin-right: 0.5rem !important;
+  div[class*="header"],
+  div[class*="Header"],
+  header {
+    padding: 0.25rem 0.5rem !important;
   }
 
-  .mobile-pad-reset {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
+  button[class*="btn"],
+  button[class*="button"],
+  button[class*="Button"],
+  div[role="button"] {
+    min-width: 28px !important;
+    min-height: 28px !important;
+    padding: 0.25rem !important;
   }
 
-  .mobile-header-container {
-    padding: 0.5rem 0.75rem !important;
+  .mobile-header-btn-override {
+    width: 28px !important;
+    height: 28px !important;
   }
 
-  .mobile-header-btn {
-    width: 32px !important;
-    height: 32px !important;
+  div[class*="tabs"],
+  div[class*="Tabs"],
+  div[class*="tab-bar"] {
+    padding: 0.25rem 0.5rem !important;
+    gap: 0.25rem !important;
+  }
+
+  div[class*="tabs"] > button,
+  div[class*="Tabs"] > button,
+  div[class*="tab-bar"] > button {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  div[class*="list"],
+  div[class*="List"] {
+    padding: 0 0.5rem !important;
   }
 }

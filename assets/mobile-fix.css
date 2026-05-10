@@ -51,7 +51,7 @@
   div[data-testid*="mode"] > div:first-child,
   div[class*="mode"] > div:first-child {
     display: flex !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     gap: 8px !important;
   }
 
@@ -66,16 +66,16 @@
 
   div.bg-gray-100.rounded-xl.p-1 {
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: column !important;
     gap: 4px !important;
     padding: 4px !important;
-    min-width: 120px !important;
+    min-width: 80px !important;
     width: auto !important;
   }
 
   div.bg-gray-100.rounded-xl.p-1 > button {
-    flex: 1 !important;
-    min-width: 50px !important;
+    width: 100% !important;
+    min-width: 70px !important;
     padding: 6px 8px !important;
   }
 
@@ -90,7 +90,8 @@
   div[class*="mode"] > div:last-child > div:first-child > button {
     flex: 1 !important;
     min-width: 0 !important;
-    padding: 8px 12px !important;
+    padding: 10px 16px !important;
+    white-space: nowrap !important;
   }
 
   div[data-testid*="mode"] > div:last-child > div:last-child,
@@ -104,6 +105,7 @@
   div[class*="mode"] > div:last-child > div:last-child > button {
     flex: 1 !important;
     min-width: 0 !important;
-    padding: 8px 12px !important;
+    padding: 10px 16px !important;
+    white-space: nowrap !important;
   }
 }

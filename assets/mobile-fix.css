@@ -1,4 +1,13 @@
+body {
+  background-color: #f0fdf4 !important;
+}
+
 @media screen and (max-width: 768px) {
+  body {
+    border: 5px solid red !important;
+    background-color: #fef3c7 !important;
+  }
+
   html, body, #root {
     width: 100%;
     max-width: 100%;

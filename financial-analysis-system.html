@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业财务分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #0a0a0f;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 260px;
+            background: rgba(20, 20, 30, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .user-role {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .role-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .role-select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .role-select option {
+            background: #1a1a2e;
+        }
+
+        .nav-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* 内容面板 */
+        .content-panel {
+            display: none;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        /* 数据录入面板 */
+        .data-entry-form {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #555;
+        }
+
+        .form-hint {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* 仪表盘面板 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .metric-icon {
+            font-size: 28px;
+        }
+
+        .metric-trend {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .metric-trend.up {
+            background: rgba(67, 233, 123, 0.2);
+            color: #43e97b;
+        }
+
+        .metric-trend.down {
+            background: rgba(245, 87, 108, 0.2);
+            color: #f5576c;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .metric-detail {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* 图表区域 */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-tab {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #888;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .chart-tab:hover {
+            color: white;
+        }
+
+        .chart-tab.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+
+        /* 预警区域 */
+        .alert-list {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .alert-item.warning {
+            border-left: 3px solid #f5a623;
+            background: rgba(245, 166, 35, 0.1);
+        }
+
+        .alert-item.danger {
+            border-left: 3px solid #f5576c;
+            background: rgba(245, 87, 108, 0.1);
+        }
+
+        .alert-item.success {
+            border-left: 3px solid #43e97b;
+            background: rgba(67, 233, 123, 0.1);
+        }
+
+        .alert-icon {
+            font-size: 24px;
+        }
+
+        .alert-content h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .alert-content p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        /* 价值评估面板 */
+        .valuation-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .valuation-score-card {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .valuation-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #667eea 0deg,
+                #764ba2 90deg,
+                #f093fb 180deg,
+                #f5576c 270deg,
+                #667eea 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+        }
+
+        .valuation-inner {
+            width: 160px;
+            height: 160px;
+            background: rgba(30, 30, 40, 0.95);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .valuation-number {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .valuation-grade {
+            font-size: 18px;
+            color: #43e97b;
+            font-weight: 600;
+        }
+
+        .valuation-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .valuation-factors {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .factor-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .factor-name {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .factor-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .analysis-details {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .analysis-section {
+            margin-bottom: 30px;
+        }
+
+        .analysis-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .analysis-list {
+            list-style: none;
+        }
+
+        .analysis-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .analysis-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* 投资建议面板 */
+        .investment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .recommendation-card {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .recommendation-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .recommendation-icon {
+            font-size: 28px;
+        }
+
+        .recommendation-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .recommendation-desc {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .recommendation-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .score-label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .score-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* 报告面板 */
+        .report-preview {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .report-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .report-section:last-child {
+            border-bottom: none;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .report-summary {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            line-height: 1.8;
+            color: #ccc;
+        }
+
+        .report-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .report-metric {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .report-metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .report-metric-label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: rgba(30, 30, 40, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .modal-close:hover {
+            color: white;
+        }
+
+        .modal-body {
+            margin-bottom: 25px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(67, 233, 123, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 1400px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .investment-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .valuation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <span class="logo-text">财务分析系统</span>
+            </div>
+
+            <div class="user-role">
+                <div class="role-label">当前角色</div>
+                <select class="role-select" id="roleSelect">
+                    <option value="employee">企业员工</option>
+                    <option value="manager">管理层</option>
+                    <option value="investor">投资者</option>
+                </select>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-item active" data-page="data-entry">
+                    <span class="nav-icon">📝</span>
+                    <span>数据录入</span>
+                </div>
+                <div class="nav-item" data-page="dashboard">
+                    <span class="nav-icon">📈</span>
+                    <span>分析仪表盘</span>
+                </div>
+                <div class="nav-item" data-page="valuation">
+                    <span class="nav-icon">⭐</span>
+                    <span>价值评估</span>
+                </div>
+                <div class="nav-item" data-page="investment">
+                    <span class="nav-icon">💰</span>
+                    <span>投资建议</span>
+                </div>
+                <div class="nav-item" data-page="report">
+                    <span class="nav-icon">📄</span>
+                    <span>分析报告</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 数据录入页面 -->
+            <div class="content-panel active" id="data-entry">
+                <div class="page-header">
+                    <h1 class="page-title">📝 数据录入</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary">批量导入</button>
+                        <button class="btn btn-primary" onclick="saveData()">保存数据</button>
+                    </div>
+                </div>
+
+                <div class="data-entry-form">
+                    <div class="form-section">
+                        <div class="form-section-title">🏢 企业基本信息</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">公司名称</label>
+                                <input type="text" class="form-input" id="companyName" placeholder="请输入公司名称">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">所属行业</label>
+                                <select class="form-input" id="industry">
+                                    <option value="">请选择行业</option>
+                                    <option value="tech">信息技术</option>
+                                    <option value="manufacture">制造业</option>
+                                    <option value="finance">金融</option>
+                                    <option value="retail">零售</option>
+                                    <option value="energy">能源</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">报告年份</label>
+                                <input type="number" class="form-input" id="reportYear" placeholder="2024">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">💰 盈利能力指标</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">营业收入（万元）</label>
+                                <input type="number" class="form-input" id="revenue" placeholder="125000">
+                                <span class="form-hint">全年营业收入总额</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">净利润（万元）</label>
+                                <input type="number" class="form-input" id="netProfit" placeholder="18500">
+                                <span class="form-hint">税后净利润</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">毛利率（%）</label>
+                                <input type="number" class="form-input" id="grossMargin" placeholder="35.2" step="0.1">
+                                <span class="form-hint">(营收-成本)/营收 × 100%</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">净利率（%）</label>
+                                <input type="number" class="form-input" id="netMargin" placeholder="14.8" step="0.1">
+                                <span class="form-hint">净利润/营收 × 100%</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ROE（%）</label>
+                                <input type="number" class="form-input" id="roe" placeholder="18.5" step="0.1">
+                                <span class="form-hint">净资产收益率</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ROA（%）</label>
+                                <input type="number" class="form-input" id="roa" placeholder="8.2" step="0.1">
+                                <span class="form-hint">总资产收益率</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">🛡️ 偿债能力指标</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">资产负债率（%）</label>
+                                <input type="number" class="form-input" id="debtRatio" placeholder="45" step="0.1">
+                                <span class="form-hint">总负债/总资产 × 100%</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">流动比率</label>
+                                <input type="number" class="form-input" id="currentRatio" placeholder="2.1" step="0.01">
+                                <span class="form-hint">流动资产/流动负债</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">速动比率</label>
+                                <input type="number" class="form-input" id="quickRatio" placeholder="1.5" step="0.01">
+                                <span class="form-hint">(流动资产-存货)/流动负债</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">📊 运营与成长指标</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">总资产周转率</label>
+                                <input type="number" class="form-input" id="assetTurnover" placeholder="1.2" step="0.01">
+                                <span class="form-hint">营收/总资产</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">营收增长率（%）</label>
+                                <input type="number" class="form-input" id="revenueGrowth" placeholder="12.5" step="0.1">
+                                <span class="form-hint">同比增长率</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">利润增长率（%）</label>
+                                <input type="number" class="form-input" id="profitGrowth" placeholder="15.2" step="0.1">
+                                <span class="form-hint">同比增长率</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">研发投入率（%）</label>
+                                <input type="number" class="form-input" id="rdRatio" placeholder="8.5" step="0.1">
+                                <span class="form-hint">研发费用/营收 × 100%</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">经营现金流（万元）</label>
+                                <input type="number" class="form-input" id="operatingCashflow" placeholder="21275">
+                                <span class="form-hint">经营活动现金流净额</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ESG评级</label>
+                                <select class="form-input" id="esgRating">
+                                    <option value="">请选择</option>
+                                    <option value="AAA">AAA</option>
+                                    <option value="AA">AA</option>
+                                    <option value="A">A</option>
+                                    <option value="BBB">BBB</option>
+                                    <option value="BB">BB</option>
+                                    <option value="B">B</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 仪表盘页面 -->
+            <div class="content-panel" id="dashboard">
+                <div class="page-header">
+                    <h1 class="page-title">📈 分析仪表盘</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary">导出Excel</button>
+                        <button class="btn btn-primary">刷新数据</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">💰</span>
+                            <span class="metric-trend up">↑ 12.5%</span>
+                        </div>
+                        <div class="metric-value" id="dashRevenue">1.25亿</div>
+                        <div class="metric-label">营业收入</div>
+                        <div class="metric-detail">行业排名 Top 20%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">📈</span>
+                            <span class="metric-trend up">↑ 8.3%</span>
+                        </div>
+                        <div class="metric-value" id="dashProfit">1850万</div>
+                        <div class="metric-label">净利润</div>
+                        <div class="metric-detail">净利率 14.8%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">🎯</span>
+                            <span class="metric-trend up">↑ 2.1%</span>
+                        </div>
+                        <div class="metric-value" id="dashMargin">35.2%</div>
+                        <div class="metric-label">毛利率</div>
+                        <div class="metric-detail">行业平均 28%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">⭐</span>
+                            <span class="metric-trend up">A</span>
+                        </div>
+                        <div class="metric-value" id="dashScore">82.25</div>
+                        <div class="metric-label">综合评分</div>
+                        <div class="metric-detail">评级 A级</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <span class="chart-title">📊 六维能力分析</span>
+                            <div class="chart-tabs">
+                                <button class="chart-tab active">雷达图</button>
+                                <button class="chart-tab">趋势图</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="dashboardRadar"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="alert-list">
+                        <div class="chart-header">
+                            <span class="chart-title">⚠️ 智能预警</span>
+                        </div>
+                        <div class="alert-item warning">
+                            <span class="alert-icon">⚠️</span>
+                            <div class="alert-content">
+                                <h4>资产负债率上升</h4>
+                                <p>较去年同期上升3.2%，建议关注资本结构优化</p>
+                            </div>
+                        </div>
+                        <div class="alert-item success">
+                            <span class="alert-icon">✅</span>
+                            <div class="alert-content">
+                                <h4>毛利率表现优异</h4>
+                                <p>高于行业平均7.2个百分点，成本控制良好</p>
+                            </div>
+                        </div>
+                        <div class="alert-item success">
+                            <span class="alert-icon">🚀</span>
+                            <div class="alert-content">
+                                <h4>营收增长强劲</h4>
+                                <p>增速高于行业平均4.3个百分点</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 价值评估页面 -->
+            <div class="content-panel" id="valuation">
+                <div class="page-header">
+                    <h1 class="page-title">⭐ 企业价值评估</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary">历史评估</button>
+                        <button class="btn btn-primary">重新评估</button>
+                    </div>
+                </div>
+
+                <div class="valuation-grid">
+                    <div class="valuation-score-card">
+                        <div class="valuation-circle">
+                            <div class="valuation-inner">
+                                <div class="valuation-number" id="valuationScore">82.25</div>
+                                <div class="valuation-grade">A级</div>
+                            </div>
+                        </div>
+                        <div class="valuation-title">综合价值评分</div>
+                        <div class="valuation-factors">
+                            <div class="factor-item">
+                                <div class="factor-name">盈利能力</div>
+                                <div class="factor-value" style="color: #667eea;">85</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-name">偿债能力</div>
+                                <div class="factor-value" style="color: #f093fb;">78</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-name">运营能力</div>
+                                <div class="factor-value" style="color: #4facfe;">82</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-name">成长能力</div>
+                                <div class="factor-value" style="color: #43e97b;">88</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-name">现金能力</div>
+                                <div class="factor-value" style="color: #fa709a;">75</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-name">ESG责任</div>
+                                <div class="factor-value" style="color: #a8edea;">80</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-details">
+                        <div class="analysis-section">
+                            <div class="analysis-title">📊 各维度详细分析</div>
+                            <ul class="analysis-list">
+                                <li>
+                                    <span>盈利能力 (25%)</span>
+                                    <span style="color: #667eea;">85分 - 优秀</span>
+                                </li>
+                                <li>
+                                    <span>偿债能力 (20%)</span>
+                                    <span style="color: #f093fb;">78分 - 良好</span>
+                                </li>
+                                <li>
+                                    <span>运营能力 (15%)</span>
+                                    <span style="color: #4facfe;">82分 - 良好</span>
+                                </li>
+                                <li>
+                                    <span>成长能力 (20%)</span>
+                                    <span style="color: #43e97b;">88分 - 优秀</span>
+                                </li>
+                                <li>
+                                    <span>现金能力 (10%)</span>
+                                    <span style="color: #fa709a;">75分 - 中等</span>
+                                </li>
+                                <li>
+                                    <span>ESG责任 (10%)</span>
+                                    <span style="color: #a8edea;">80分 - 良好</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="analysis-section">
+                            <div class="analysis-title">💡 评估结论</div>
+                            <div class="report-summary">
+                                该公司在成长能力和盈利能力方面表现突出，研发投入率高于行业平均水平，展现出良好的发展潜力。资产负债率处于合理范围，财务结构稳健。建议继续保持研发投入强度，同时关注现金流管理，进一步提升综合竞争力。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 投资建议页面 -->
+            <div class="content-panel" id="investment">
+                <div class="page-header">
+                    <h1 class="page-title">💰 投资建议</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary">行业对比</button>
+                        <button class="btn btn-primary">生成报告</button>
+                    </div>
+                </div>
+
+                <div class="investment-grid">
+                    <div class="recommendation-card">
+                        <div class="recommendation-header">
+                            <span class="recommendation-icon">📈</span>
+                            <span class="recommendation-title">成长性评估</span>
+                        </div>
+                        <div class="recommendation-desc">
+                            基于营收增长率、利润增速、研发投入等指标综合评估企业发展潜力。
+                        </div>
+                        <div class="recommendation-score">
+                            <span class="score-label">评分</span>
+                            <span class="score-value" style="color: #43e97b;">88/100</span>
+                        </div>
+                    </div>
+                    <div class="recommendation-card">
+                        <div class="recommendation-header">
+                            <span class="recommendation-icon">🛡️</span>
+                            <span class="recommendation-title">风险评估</span>
+                        </div>
+                        <div class="recommendation-desc">
+                            基于资产负债率、现金流、盈利能力波动性等指标评估企业风险水平。
+                        </div>
+                        <div class="recommendation-score">
+                            <span class="score-label">评分</span>
+                            <span class="score-value" style="color: #4facfe;">78/100</span>
+                        </div>
+                    </div>
+                    <div class="recommendation-card">
+                        <div class="recommendation-header">
+                            <span class="recommendation-icon">⭐</span>
+                            <span class="recommendation-title">综合推荐</span>
+                        </div>
+                        <div class="recommendation-desc">
+                            综合成长性、风险、估值等因素，给出投资建议和目标价位参考。
+                        </div>
+                        <div class="recommendation-score">
+                            <span class="score-label">建议</span>
+                            <span class="score-value" style="color: #667eea;">增持</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 报告页面 -->
+            <div class="content-panel" id="report">
+                <div class="page-header">
+                    <h1 class="page-title">📄 分析报告</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary">下载PDF</button>
+                        <button class="btn btn-secondary">发送邮件</button>
+                        <button class="btn btn-primary">生成报告</button>
+                    </div>
+                </div>
+
+                <div class="report-preview">
+                    <div class="report-section">
+                        <div class="report-title">📊 核心指标摘要</div>
+                        <div class="report-metrics">
+                            <div class="report-metric">
+                                <div class="report-metric-value">1.25亿</div>
+                                <div class="report-metric-label">营业收入</div>
+                            </div>
+                            <div class="report-metric">
+                                <div class="report-metric-value">35.2%</div>
+                                <div class="report-metric-label">毛利率</div>
+                            </div>
+                            <div class="report-metric">
+                                <div class="report-metric-value">82.25</div>
+                                <div class="report-metric-label">综合评分</div>
+                            </div>
+                            <div class="report-metric">
+                                <div class="report-metric-value">A级</div>
+                                <div class="report-metric-label">价值评级</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <div class="report-title">📝 分析结论</div>
+                        <div class="report-summary">
+                            <p>根据六维财务分析模型对该公司2024年度财务数据的综合评估，主要结论如下：</p>
+                            <br>
+                            <p><strong>1. 盈利能力：优秀</strong></p>
+                            <p>毛利率35.2%，高于行业平均28%，净利率14.8%，ROE达18.5%，整体盈利能力处于行业领先水平。</p>
+                            <br>
+                            <p><strong>2. 偿债能力：良好</strong></p>
+                            <p>资产负债率45%，处于合理范围，流动比率2.1，短期偿债能力较强，财务结构稳健。</p>
+                            <br>
+                            <p><strong>3. 成长能力：优秀</strong></p>
+                            <p>营收增长12.5%，利润增长15.2%，研发投入率8.5%，展现出良好的成长潜力和创新动力。</p>
+                            <br>
+                            <p><strong>综合评级：A级</strong></p>
+                            <p>建议关注现金流管理，进一步优化资本结构。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast">数据保存成功！</div>
+
+    <script>
+        // 图表实例
+        let radarChart;
+
+        // 初始化雷达图
+        function initRadarChart() {
+            const ctx = document.getElementById('dashboardRadar').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['盈利能力', '偿债能力', '运营能力', '成长能力', '现金能力', 'ESG责任'],
+                    datasets: [
+                        {
+                            label: '本公司',
+                            data: [85, 78, 82, 88, 75, 80],
+                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                            borderColor: '#667eea',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#667eea'
+                        },
+                        {
+                            label: '行业平均',
+                            data: [70, 72, 68, 65, 70, 65],
+                            backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                            borderColor: '#f5576c',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#f5576c'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#888', usePointStyle: true }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: '#888' },
+                            ticks: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 导航切换
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                
+                const pageId = item.dataset.page;
+                document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+            });
+        });
+
+        // 角色切换
+        document.getElementById('roleSelect').addEventListener('change', (e) => {
+            const role = e.target.value;
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            // 根据角色调整导航项
+            if (role === 'employee') {
+                // 企业员工：数据录入、报告
+                navItems[0].style.display = 'flex';
+                navItems[1].style.display = 'flex';
+                navItems[2].style.display = 'flex';
+                navItems[3].style.display = 'none';
+                navItems[4].style.display = 'flex';
+            } else if (role === 'manager') {
+                // 管理层：仪表盘、评估、报告
+                navItems[0].style.display = 'flex';
+                navItems[1].style.display = 'flex';
+                navItems[2].style.display = 'flex';
+                navItems[3].style.display = 'none';
+                navItems[4].style.display = 'flex';
+            } else if (role === 'investor') {
+                // 投资者：评估、投资建议
+                navItems[0].style.display = 'none';
+                navItems[1].style.display = 'flex';
+                navItems[2].style.display = 'flex';
+                navItems[3].style.display = 'flex';
+                navItems[4].style.display = 'flex';
+            }
+            
+            showToast(`已切换为${e.target.options[e.target.selectedIndex].text}视图`);
+        });
+
+        // 保存数据
+        function saveData() {
+            const data = {
+                companyName: document.getElementById('companyName').value,
+                industry: document.getElementById('industry').value,
+                reportYear: document.getElementById('reportYear').value,
+                revenue: document.getElementById('revenue').value,
+                netProfit: document.getElementById('netProfit').value,
+                grossMargin: document.getElementById('grossMargin').value,
+                netMargin: document.getElementById('netMargin').value,
+                roe: document.getElementById('roe').value,
+                roa: document.getElementById('roa').value,
+                debtRatio: document.getElementById('debtRatio').value,
+                currentRatio: document.getElementById('currentRatio').value,
+                quickRatio: document.getElementById('quickRatio').value,
+                assetTurnover: document.getElementById('assetTurnover').value,
+                revenueGrowth: document.getElementById('revenueGrowth').value,
+                profitGrowth: document.getElementById('profitGrowth').value,
+                rdRatio: document.getElementById('rdRatio').value,
+                operatingCashflow: document.getElementById('operatingCashflow').value,
+                esgRating: document.getElementById('esgRating').value
+            };
+            
+            // 简单的数据验证
+            if (!data.companyName || !data.revenue) {
+                showToast('请填写必填项：公司名称和营业收入');
+                return;
+            }
+            
+            // 计算综合评分
+            const score = calculateScore(data);
+            
+            // 更新仪表盘
+            updateDashboard(data, score);
+            
+            // 保存到本地存储
+            localStorage.setItem('companyData', JSON.stringify(data));
+            
+            showToast('数据保存成功！');
+        }
+
+        // 计算评分
+        function calculateScore(data) {
+            // 简化的评分逻辑
+            let profitScore = 0;
+            let debtScore = 0;
+            let operationScore = 0;
+            let growthScore = 0;
+            let cashScore = 0;
+            let esgScore = 0;
+            
+            // 盈利能力评分
+            if (data.grossMargin >= 30) profitScore = 80 + Math.min(20, (data.grossMargin - 30) * 2);
+            else profitScore = Math.max(0, data.grossMargin * 2);
+            
+            // 偿债能力评分
+            if (data.debtRatio >= 40 && data.debtRatio <= 60) debtScore = 85;
+            else if (data.debtRatio < 40) debtScore = 90;
+            else debtScore = Math.max(50, 90 - (data.debtRatio - 60) * 2);
+            
+            // 运营能力评分
+            operationScore = Math.min(100, data.assetTurnover * 70);
+            
+            // 成长能力评分
+            growthScore = Math.min(100, 50 + data.revenueGrowth * 2 + data.rdRatio);
+            
+            // 现金能力评分
+            const cashRatio = data.operatingCashflow / data.netProfit;
+            cashScore = Math.min(100, cashRatio * 80);
+            
+            // ESG评分
+            const esgMap = { 'AAA': 95, 'AA': 85, 'A': 75, 'BBB': 65, 'BB': 55, 'B': 45 };
+            esgScore = esgMap[data.esgRating] || 70;
+            
+            // 综合评分
+            const totalScore = (
+                profitScore * 0.25 +
+                debtScore * 0.20 +
+                operationScore * 0.15 +
+                growthScore * 0.20 +
+                cashScore * 0.10 +
+                esgScore * 0.10
+            );
+            
+            return {
+                total: totalScore.toFixed(2),
+                profit: profitScore.toFixed(0),
+                debt: debtScore.toFixed(0),
+                operation: operationScore.toFixed(0),
+                growth: growthScore.toFixed(0),
+                cash: cashScore.toFixed(0),
+                esg: esgScore.toFixed(0)
+            };
+        }
+
+        // 更新仪表盘
+        function updateDashboard(data, score) {
+            document.getElementById('dashRevenue').textContent = (data.revenue / 10000).toFixed(2) + '亿';
+            document.getElementById('dashProfit').textContent = (data.netProfit / 10000).toFixed(2) + '亿';
+            document.getElementById('dashMargin').textContent = data.grossMargin + '%';
+            document.getElementById('dashScore').textContent = score.total;
+            
+            // 更新雷达图
+            if (radarChart) {
+                radarChart.data.datasets[0].data = [
+                    score.profit,
+                    score.debt,
+                    score.operation,
+                    score.growth,
+                    score.cash,
+                    score.esg
+                ];
+                radarChart.update();
+            }
+        }
+
+        // Toast提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initRadarChart();
+            
+            // 从本地存储加载数据
+            const savedData = localStorage.getItem('companyData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                Object.keys(data).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) input.value = data[key];
+                });
+                const score = calculateScore(data);
+                updateDashboard(data, score);
+            }
+        });
+    </script>
+</body>
+</html>

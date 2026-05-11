@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年报核心数据分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #000000;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .light-beam {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            z-index: 0;
+        }
+
+        .light-beam.visible {
+            opacity: 1;
+        }
+
+        .light-beam-left {
+            width: 60vw;
+            height: 80vh;
+            top: 0;
+            left: 0;
+            background: radial-gradient(ellipse at 0% 0%, 
+                rgba(160, 205, 255, 0.75) 0%, 
+                rgba(70, 135, 235, 0.4) 50%, 
+                transparent 85%);
+            transform: rotate(20deg);
+            transform-origin: top left;
+            filter: blur(60px);
+        }
+
+        .light-beam-right {
+            width: 60vw;
+            height: 80vh;
+            top: 0;
+            right: 0;
+            background: radial-gradient(ellipse at 100% 0%, 
+                rgba(160, 205, 255, 0.75) 0%, 
+                rgba(70, 135, 235, 0.4) 50%, 
+                transparent 85%);
+            transform: rotate(-20deg);
+            transform-origin: top right;
+            filter: blur(60px);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 14px;
+            color: #888;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+            margin-bottom: 40px;
+        }
+
+        .tag-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            animation: pulse 2s infinite;
+        }
+
+        .text-section {
+            text-align: center;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+        }
+
+        .main-title {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #888888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.4s forwards;
+        }
+
+        .btn-primary {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #409EFF 0%, #00CED1 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(64, 158, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(64, 158, 255, 0.6);
+        }
+
+        .btn-secondary {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #888;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .dashboard-wrapper {
+            perspective: 1000px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.6s forwards;
+        }
+
+        .dashboard {
+            width: 1150px;
+            height: 750px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .sidebar {
+            width: 240px;
+            height: 100%;
+            background: rgba(30, 30, 30, 0.5);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .sidebar-logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(64, 158, 255, 0.2);
+            color: #409EFF;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 24px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            color: white;
+            border: none;
+        }
+
+        .chart-section {
+            flex: 1;
+            display: flex;
+            gap: 24px;
+        }
+
+        .chart-container {
+            flex: 2;
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-tab {
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+        }
+
+        .chart-tab:hover {
+            color: white;
+        }
+
+        .chart-tab.active {
+            background: rgba(64, 158, 255, 0.3);
+            color: #409EFF;
+        }
+
+        .chart-wrapper {
+            height: calc(100% - 50px);
+            position: relative;
+        }
+
+        .logs-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .log-list {
+            flex: 1;
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow-y: auto;
+        }
+
+        .log-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.3s ease;
+        }
+
+        .log-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .log-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .log-icon.success {
+            background: rgba(103, 194, 58, 0.2);
+            color: #67C23A;
+        }
+
+        .log-icon.warning {
+            background: rgba(230, 162, 60, 0.2);
+            color: #E6A23C;
+        }
+
+        .log-icon.info {
+            background: rgba(64, 158, 255, 0.2);
+            color: #409EFF;
+        }
+
+        .log-content {
+            flex: 1;
+        }
+
+        .log-title {
+            font-size: 14px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .log-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .config-panel {
+            width: 280px;
+            height: 100%;
+            background: rgba(30, 30, 30, 0.5);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .config-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .config-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .config-label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .config-value {
+            font-size: 13px;
+            color: #409EFF;
+            font-weight: 600;
+        }
+
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle.active {
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle.active::after {
+            left: 23px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .metric-box {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .light-beam {
+            animation-delay: 0.5s;
+        }
+
+        .chart-placeholder {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                width: 100%;
+                max-width: 1150px;
+                height: auto;
+                min-height: 750px;
+            }
+            
+            .main-title {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景光束 -->
+    <div class="light-beam light-beam-left"></div>
+    <div class="light-beam light-beam-right"></div>
+
+    <div class="container">
+        <!-- 顶部标签 -->
+        <div class="tag">
+            <span class="tag-dot"></span>
+            <span>AI驱动 · 智能分析</span>
+        </div>
+
+        <!-- 文本区域 -->
+        <div class="text-section">
+            <h1 class="main-title">年报核心数据分析系统</h1>
+            <p class="subtitle">智能财务分析 · 行业对标 · 价值评估</p>
+        </div>
+
+        <!-- 按钮组 -->
+        <div class="button-group">
+            <button class="btn-primary">开始分析</button>
+            <button class="btn-secondary">了解更多</button>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard-wrapper">
+            <div class="dashboard" id="dashboard">
+                <!-- 左侧边栏 -->
+                <div class="sidebar">
+                    <div class="sidebar-logo">
+                        <div class="sidebar-logo-icon">📊</div>
+                        <span class="sidebar-logo-text">Financial AI</span>
+                    </div>
+                    
+                    <div class="sidebar-nav">
+                        <div class="nav-item active">
+                            <span class="nav-icon">📈</span>
+                            <span>仪表盘</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="nav-icon">📁</span>
+                            <span>数据导入</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="nav-icon">📊</span>
+                            <span>财务分析</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="nav-icon">🎯</span>
+                            <span>行业对比</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="nav-icon">⭐</span>
+                            <span>价值评估</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="nav-icon">📋</span>
+                            <span>报告中心</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 主内容区 -->
+                <div class="main-content">
+                    <div class="content-header">
+                        <h2 class="content-title">财务数据分析</h2>
+                        <div class="content-actions">
+                            <button class="action-btn">导出报告</button>
+                            <button class="action-btn primary">新建分析</button>
+                        </div>
+                    </div>
+
+                    <div class="chart-section">
+                        <!-- 图表区域 -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <span class="chart-title">营收与利润趋势</span>
+                                <div class="chart-tabs">
+                                    <button class="chart-tab active">月度</button>
+                                    <button class="chart-tab">季度</button>
+                                    <button class="chart-tab">年度</button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 日志列表 -->
+                        <div class="logs-section">
+                            <div class="log-list">
+                                <div class="log-item">
+                                    <div class="log-icon success">✓</div>
+                                    <div class="log-content">
+                                        <div class="log-title">数据导入成功</div>
+                                        <div class="log-time">2024-01-15 10:30</div>
+                                    </div>
+                                </div>
+                                <div class="log-item">
+                                    <div class="log-icon info">ℹ</div>
+                                    <div class="log-content">
+                                        <div class="log-title">行业数据已更新</div>
+                                        <div class="log-time">2024-01-15 09:15</div>
+                                    </div>
+                                </div>
+                                <div class="log-item">
+                                    <div class="log-icon warning">⚠</div>
+                                    <div class="log-content">
+                                        <div class="log-title">检测到异常指标</div>
+                                        <div class="log-time">2024-01-14 16:45</div>
+                                    </div>
+                                </div>
+                                <div class="log-item">
+                                    <div class="log-icon success">✓</div>
+                                    <div class="log-content">
+                                        <div class="log-title">报告生成完成</div>
+                                        <div class="log-time">2024-01-14 14:20</div>
+                                    </div>
+                                </div>
+                                <div class="log-item">
+                                    <div class="log-icon info">ℹ</div>
+                                    <div class="log-content">
+                                        <div class="log-title">系统健康检查通过</div>
+                                        <div class="log-time">2024-01-14 08:00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧配置面板 -->
+                <div class="config-panel">
+                    <div class="config-section">
+                        <h3 class="config-title">公司信息</h3>
+                        <div class="config-item">
+                            <span class="config-label">公司名称</span>
+                            <span class="config-value">示例科技</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">所属行业</span>
+                            <span class="config-value">信息技术</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">分析期间</span>
+                            <span class="config-value">2023</span>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3 class="config-title">智能预警</h3>
+                        <div class="config-item">
+                            <span class="config-label">异常检测</span>
+                            <div class="toggle active"></div>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">趋势提醒</span>
+                            <div class="toggle active"></div>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">邮件通知</span>
+                            <div class="toggle"></div>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3 class="config-title">关键指标</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <div class="metric-value">85.5</div>
+                                <div class="metric-label">综合评分</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-value">35.2%</div>
+                                <div class="metric-label">毛利率</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-value">12.5%</div>
+                                <div class="metric-label">营收增长</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-value">Top 15%</div>
+                                <div class="metric-label">行业排名</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 图表初始化
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                datasets: [
+                    {
+                        label: '营业收入',
+                        data: [8.5, 9.2, 10.1, 9.8, 10.5, 11.2, 10.8, 11.5, 12.0, 11.8, 12.3, 12.5],
+                        backgroundColor: 'rgba(64, 158, 255, 0.6)',
+                        borderColor: 'rgba(64, 158, 255, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: '净利润',
+                        data: [1.2, 1.4, 1.5, 1.3, 1.6, 1.8, 1.5, 1.7, 1.9, 1.8, 1.9, 1.85],
+                        type: 'line',
+                        borderColor: 'rgba(0, 206, 209, 1)',
+                        backgroundColor: 'rgba(0, 206, 209, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(0, 206, 209, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: '#888',
+                            font: {
+                                size: 12
+                            },
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#888',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + '亿元';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#666'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        },
+                        ticks: {
+                            color: '#666',
+                            callback: function(value) {
+                                return value + '亿';
+                            }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            callback: function(value) {
+                                return value + '亿';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3D Tilt效果
+        const dashboard = document.getElementById('dashboard');
+        const wrapper = document.querySelector('.dashboard-wrapper');
+
+        wrapper.addEventListener('mousemove', (e) => {
+            const rect = wrapper.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = (y - centerY) / 20;
+            const rotateY = (centerX - x) / 20;
+            
+            dashboard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            dashboard.style.transform = 'rotateX(0) rotateY(0)';
+        });
+
+        // 光束延迟出现
+        setTimeout(() => {
+            document.querySelectorAll('.light-beam').forEach(beam => {
+                beam.classList.add('visible');
+            });
+        }, 100);
+
+        // Toggle切换
+        document.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+            });
+        });
+
+        // 图表Tab切换
+        document.querySelectorAll('.chart-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

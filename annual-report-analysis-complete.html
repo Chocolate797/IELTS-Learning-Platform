@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年报核心数据分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #000000;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .light-beam {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            z-index: 0;
+        }
+
+        .light-beam.visible {
+            opacity: 1;
+        }
+
+        .light-beam-left {
+            width: 60vw;
+            height: 80vh;
+            top: 0;
+            left: 0;
+            background: radial-gradient(ellipse at 0% 0%, 
+                rgba(160, 205, 255, 0.75) 0%, 
+                rgba(70, 135, 235, 0.4) 50%, 
+                transparent 85%);
+            transform: rotate(20deg);
+            transform-origin: top left;
+            filter: blur(60px);
+        }
+
+        .light-beam-right {
+            width: 60vw;
+            height: 80vh;
+            top: 0;
+            right: 0;
+            background: radial-gradient(ellipse at 100% 0%, 
+                rgba(160, 205, 255, 0.75) 0%, 
+                rgba(70, 135, 235, 0.4) 50%, 
+                transparent 85%);
+            transform: rotate(-20deg);
+            transform-origin: top right;
+            filter: blur(60px);
+        }
+
+        .landing-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 14px;
+            color: #888;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+            margin-bottom: 40px;
+        }
+
+        .tag-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            animation: pulse 2s infinite;
+        }
+
+        .text-section {
+            text-align: center;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+        }
+
+        .main-title {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #888888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.4s forwards;
+        }
+
+        .btn-primary {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #409EFF 0%, #00CED1 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(64, 158, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(64, 158, 255, 0.6);
+        }
+
+        .btn-secondary {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #888;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .dashboard-preview {
+            perspective: 1000px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.6s forwards;
+        }
+
+        .dashboard {
+            width: 1150px;
+            height: 750px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .analysis-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .analysis-page.active {
+            opacity: 1;
+            pointer-events: all;
+            display: block;
+        }
+
+        .analysis-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            color: white;
+            border: none;
+        }
+
+        .upload-section {
+            background: rgba(30, 30, 30, 0.8);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-section:hover {
+            border-color: rgba(64, 158, 255, 0.5);
+            background: rgba(64, 158, 255, 0.05);
+        }
+
+        .upload-section.dragover {
+            border-color: #409EFF;
+            background: rgba(64, 158, 255, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-text span {
+            color: #409EFF;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .upload-formats {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .format-tag {
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .uploaded-file {
+            background: rgba(64, 158, 255, 0.1);
+            border: 1px solid rgba(64, 158, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .uploaded-file.show {
+            display: block;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 32px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-details h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .file-details p {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .file-status {
+            padding: 6px 16px;
+            background: #67C23A;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .file-status.processing {
+            background: #E6A23C;
+        }
+
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(64, 158, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .metric-icon.blue { background: rgba(64, 158, 255, 0.2); }
+        .metric-icon.green { background: rgba(103, 194, 58, 0.2); }
+        .metric-icon.orange { background: rgba(230, 162, 60, 0.2); }
+        .metric-icon.purple { background: rgba(144, 147, 153, 0.2); }
+        .metric-icon.red { background: rgba(245, 108, 108, 0.2); }
+
+        .metric-label {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .metric-change.up { color: #67C23A; }
+        .metric-change.down { color: #F56C6C; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .card-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card-tab {
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+        }
+
+        .card-tab:hover {
+            color: white;
+        }
+
+        .card-tab.active {
+            background: rgba(64, 158, 255, 0.2);
+            color: #409EFF;
+        }
+
+        .chart-area {
+            height: 280px;
+            position: relative;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px;
+            color: #888;
+            font-size: 12px;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table td {
+            padding: 14px 12px;
+            color: white;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .status-badge.excellent {
+            background: rgba(103, 194, 58, 0.2);
+            color: #67C23A;
+        }
+
+        .status-badge.good {
+            background: rgba(64, 158, 255, 0.2);
+            color: #409EFF;
+        }
+
+        .status-badge.warning {
+            background: rgba(230, 162, 60, 0.2);
+            color: #E6A23C;
+        }
+
+        .radar-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .radar-chart {
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .suggestion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .suggestion-item {
+            padding: 14px;
+            border-radius: 10px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .suggestion-item.positive {
+            background: rgba(103, 194, 58, 0.1);
+            border-left: 3px solid #67C23A;
+        }
+
+        .suggestion-item.warning {
+            background: rgba(230, 162, 60, 0.1);
+            border-left: 3px solid #E6A23C;
+        }
+
+        .suggestion-item.negative {
+            background: rgba(245, 108, 108, 0.1);
+            border-left: 3px solid #F56C6C;
+        }
+
+        .suggestion-icon {
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        .suggestion-content h4 {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .suggestion-content p {
+            color: #888;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .valuation-section {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
+
+        .valuation-card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .valuation-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #409EFF 0deg, 
+                #67C23A 90deg, 
+                #E6A23C 180deg, 
+                #F56C6C 270deg, 
+                #409EFF 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .valuation-inner {
+            width: 130px;
+            height: 130px;
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .valuation-number {
+            font-size: 42px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #409EFF, #00CED1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .valuation-level {
+            font-size: 16px;
+            color: #67C23A;
+            font-weight: 600;
+        }
+
+        .valuation-factors {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .factor-item {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .factor-name {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .factor-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(103, 194, 58, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-hint {
+            font-size: 12px;
+            color: #555;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                width: 100%;
+                max-width: 1150px;
+                height: auto;
+                min-height: 750px;
+            }
+            
+            .main-title {
+                font-size: 40px;
+            }
+            
+            .metrics-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .radar-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .valuation-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="light-beam light-beam-left"></div>
+    <div class="light-beam light-beam-right"></div>
+
+    <div class="landing-container" id="landingPage">
+        <div class="tag">
+            <span class="tag-dot"></span>
+            <span>AI驱动 · 年报分析</span>
+        </div>
+
+        <div class="text-section">
+            <h1 class="main-title">年报核心数据分析系统</h1>
+            <p class="subtitle">智能解析年报 · 行业对标 · 价值评估</p>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" id="startAnalysis">开始分析</button>
+            <button class="btn-secondary">了解更多</button>
+        </div>
+
+        <div class="dashboard-preview">
+            <div class="dashboard" id="dashboardPreview"></div>
+        </div>
+    </div>
+
+    <div class="analysis-page" id="analysisPage">
+        <div class="analysis-container">
+            <div class="top-nav">
+                <div class="nav-brand">
+                    <div class="nav-logo">📊</div>
+                    <span class="nav-title">年报分析系统</span>
+                </div>
+                <div class="nav-actions">
+                    <button class="nav-btn" id="backToHome">返回首页</button>
+                    <button class="nav-btn" id="exportReport">导出报告</button>
+                    <button class="nav-btn primary" id="newAnalysis">新建分析</button>
+                </div>
+            </div>
+
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">拖拽年报文件到此处，或 <span>点击上传</span></div>
+                <div class="upload-hint">支持PDF年报、Excel财务数据导入，AI自动解析提取关键数据</div>
+                <div class="upload-formats">
+                    <span class="format-tag">PDF年报</span>
+                    <span class="format-tag">Excel</span>
+                    <span class="format-tag">CSV</span>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf,.xlsx,.xls,.csv" style="display: none;">
+                
+                <div class="uploaded-file" id="uploadedFile">
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <div class="file-details">
+                            <h4 id="fileName">某某公司2023年度报告.pdf</h4>
+                            <p id="fileInfo">已提取 28 项财务指标 | 解析时间：3.2秒</p>
+                        </div>
+                        <span class="file-status" id="fileStatus">✓ 已解析</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-row" id="metricsRow">
+                <div class="metric-card">
+                    <div class="metric-icon blue">💰</div>
+                    <div class="metric-label">营业收入</div>
+                    <div class="metric-value" id="revenueValue">--</div>
+                    <div class="metric-change" id="revenueChange">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon green">📈</div>
+                    <div class="metric-label">净利润</div>
+                    <div class="metric-value" id="profitValue">--</div>
+                    <div class="metric-change" id="profitChange">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon orange">🎯</div>
+                    <div class="metric-label">毛利率</div>
+                    <div class="metric-value" id="marginValue">--</div>
+                    <div class="metric-change" id="marginChange">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon purple">📊</div>
+                    <div class="metric-label">资产负债率</div>
+                    <div class="metric-value" id="debtValue">--</div>
+                    <div class="metric-change" id="debtChange">--</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon red">⭐</div>
+                    <div class="metric-label">综合评分</div>
+                    <div class="metric-value" id="scoreValue">--</div>
+                    <div class="metric-change" id="scoreChange">--</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📉 财务趋势分析</span>
+                        <div class="card-tabs">
+                            <button class="card-tab active" data-type="revenue">营收</button>
+                            <button class="card-tab" data-type="profit">利润</button>
+                            <button class="card-tab" data-type="cashflow">现金流</button>
+                        </div>
+                    </div>
+                    <div class="chart-area" id="trendChartArea">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <div class="empty-state-text">暂无数据</div>
+                            <div class="empty-state-hint">请先上传年报文件</div>
+                        </div>
+                        <canvas id="trendChart" style="display: none;"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📋 财务数据明细</span>
+                    </div>
+                    <table class="data-table" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>指标</th>
+                                <th>2023年</th>
+                                <th>2022年</th>
+                                <th>同比</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #666;">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="radar-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🎯 行业竞争力雷达图</span>
+                    </div>
+                    <div class="radar-chart" id="radarChartArea">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎯</div>
+                            <div class="empty-state-text">暂无数据</div>
+                            <div class="empty-state-hint">请先上传年报文件</div>
+                        </div>
+                        <canvas id="radarChart" style="display: none;"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">💡 AI智能分析建议</span>
+                    </div>
+                    <div class="suggestion-list" id="suggestionList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💡</div>
+                            <div class="empty-state-text">暂无建议</div>
+                            <div class="empty-state-hint">请先上传年报文件</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="valuation-section">
+                <div class="valuation-card">
+                    <div class="valuation-circle">
+                        <div class="valuation-inner">
+                            <div class="valuation-number" id="valuationScore">--</div>
+                            <div class="valuation-level" id="valuationLevel">--</div>
+                        </div>
+                    </div>
+                    <h3 style="color: white; margin-bottom: 16px; font-size: 16px;">公司价值评估</h3>
+                    <div class="valuation-factors">
+                        <div class="factor-item">
+                            <div class="factor-name">盈利能力</div>
+                            <div class="factor-value" id="factorProfit" style="color: #667eea;">--</div>
+                        </div>
+                        <div class="factor-item">
+                            <div class="factor-name">偿债能力</div>
+                            <div class="factor-value" id="factorDebt" style="color: #f093fb;">--</div>
+                        </div>
+                        <div class="factor-item">
+                            <div class="factor-name">运营能力</div>
+                            <div class="factor-value" id="factorOperation" style="color: #4facfe;">--</div>
+                        </div>
+                        <div class="factor-item">
+                            <div class="factor-name">成长能力</div>
+                            <div class="factor-value" id="factorGrowth" style="color: #43e97b;">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📊 六维能力评估</span>
+                    </div>
+                    <div class="chart-area" id="valuationChartArea">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <div class="empty-state-text">暂无数据</div>
+                            <div class="empty-state-hint">请先上传年报文件</div>
+                        </div>
+                        <canvas id="valuationChart" style="display: none;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">年报解析成功！</div>
+
+    <script>
+        let trendChart, radarChart, valuationChart;
+        let extractedData = null;
+
+        function initTrendChart(data) {
+            const ctx = document.getElementById('trendChart');
+            ctx.style.display = 'block';
+            
+            if (trendChart) trendChart.destroy();
+            
+            trendChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.months,
+                    datasets: [
+                        {
+                            label: '营业收入(亿元)',
+                            data: data.revenue,
+                            backgroundColor: 'rgba(64, 158, 255, 0.6)',
+                            borderColor: 'rgba(64, 158, 255, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '净利润(亿元)',
+                            data: data.profit,
+                            type: 'line',
+                            borderColor: 'rgba(0, 206, 209, 1)',
+                            backgroundColor: 'rgba(0, 206, 209, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: 'rgba(0, 206, 209, 1)',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#888', usePointStyle: true } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#666' } },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#666' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#666' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initRadarChart(scores) {
+            const ctx = document.getElementById('radarChart');
+            ctx.style.display = 'block';
+            
+            if (radarChart) radarChart.destroy();
+            
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['盈利能力', '偿债能力', '运营能力', '成长能力', '现金能力'],
+                    datasets: [
+                        {
+                            label: '本公司',
+                            data: [scores.profit, scores.debt, scores.operation, scores.growth, scores.cash],
+                            backgroundColor: 'rgba(64, 158, 255, 0.2)',
+                            borderColor: '#409EFF',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#409EFF'
+                        },
+                        {
+                            label: '行业平均',
+                            data: [70, 72, 68, 65, 70],
+                            backgroundColor: 'rgba(103, 194, 58, 0.2)',
+                            borderColor: '#67C23A',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#67C23A'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#888', usePointStyle: true } } },
+                    scales: {
+                        r: {
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { display: false },
+                            pointLabels: { color: '#888' },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function initValuationChart(scores) {
+            const ctx = document.getElementById('valuationChart');
+            ctx.style.display = 'block';
+            
+            if (valuationChart) valuationChart.destroy();
+            
+            valuationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['盈利能力', '偿债能力', '运营能力', '成长能力', '现金能力', 'ESG责任'],
+                    datasets: [{
+                        label: '评分',
+                        data: [scores.profit, scores.debt, scores.operation, scores.growth, scores.cash, scores.esg],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(240, 147, 251, 0.8)',
+                            'rgba(79, 172, 254, 0.8)',
+                            'rgba(67, 233, 123, 0.8)',
+                            'rgba(250, 112, 154, 0.8)',
+                            'rgba(168, 237, 234, 0.8)'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#666' },
+                            max: 100
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#888' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMetrics(data) {
+            document.getElementById('revenueValue').textContent = data.revenue + '亿';
+            document.getElementById('revenueChange').innerHTML = `<span class="metric-change ${data.revenueGrowth >= 0 ? 'up' : 'down'}">${data.revenueGrowth >= 0 ? '↑' : '↓'} ${Math.abs(data.revenueGrowth)}% 同比</span>`;
+            
+            document.getElementById('profitValue').textContent = data.profit + '万';
+            document.getElementById('profitChange').innerHTML = `<span class="metric-change ${data.profitGrowth >= 0 ? 'up' : 'down'}">${data.profitGrowth >= 0 ? '↑' : '↓'} ${Math.abs(data.profitGrowth)}% 同比</span>`;
+            
+            document.getElementById('marginValue').textContent = data.grossMargin + '%';
+            document.getElementById('marginChange').innerHTML = `<span class="metric-change ${data.marginChange >= 0 ? 'up' : 'down'}">${data.marginChange >= 0 ? '↑' : '↓'} ${Math.abs(data.marginChange)}% 同比</span>`;
+            
+            document.getElementById('debtValue').textContent = data.debtRatio + '%';
+            document.getElementById('debtChange').innerHTML = `<span class="metric-change ${data.debtChange <= 0 ? 'up' : 'down'}">${data.debtChange >= 0 ? '↑' : '↓'} ${Math.abs(data.debtChange)}% 同比</span>`;
+            
+            document.getElementById('scoreValue').textContent = data.totalScore;
+            document.getElementById('scoreChange').innerHTML = `<span class="metric-change up">行业排名 ${data.rank}</span>`;
+        }
+
+        function updateDataTable(data) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td>营业收入</td>
+                    <td>${data.revenue}亿</td>
+                    <td>${(data.revenue / (1 + data.revenueGrowth / 100)).toFixed(2)}亿</td>
+                    <td style="color: ${data.revenueGrowth >= 0 ? '#67C23A' : '#F56C6C'};">${data.revenueGrowth >= 0 ? '+' : ''}${data.revenueGrowth}%</td>
+                    <td><span class="status-badge ${data.revenueGrowth >= 10 ? 'excellent' : 'good'}">${data.revenueGrowth >= 10 ? '优秀' : '良好'}</span></td>
+                </tr>
+                <tr>
+                    <td>净利润</td>
+                    <td>${data.profit}万</td>
+                    <td>${(data.profit / (1 + data.profitGrowth / 100)).toFixed(0)}万</td>
+                    <td style="color: ${data.profitGrowth >= 0 ? '#67C23A' : '#F56C6C'};">${data.profitGrowth >= 0 ? '+' : ''}${data.profitGrowth}%</td>
+                    <td><span class="status-badge ${data.profitGrowth >= 10 ? 'excellent' : 'good'}">${data.profitGrowth >= 10 ? '优秀' : '良好'}</span></td>
+                </tr>
+                <tr>
+                    <td>毛利率</td>
+                    <td>${data.grossMargin}%</td>
+                    <td>${(data.grossMargin - data.marginChange).toFixed(1)}%</td>
+                    <td style="color: ${data.marginChange >= 0 ? '#67C23A' : '#F56C6C'};">${data.marginChange >= 0 ? '+' : ''}${data.marginChange}%</td>
+                    <td><span class="status-badge ${data.grossMargin >= 30 ? 'excellent' : 'good'}">${data.grossMargin >= 30 ? '优秀' : '良好'}</span></td>
+                </tr>
+                <tr>
+                    <td>资产负债率</td>
+                    <td>${data.debtRatio}%</td>
+                    <td>${(data.debtRatio - data.debtChange).toFixed(1)}%</td>
+                    <td style="color: ${data.debtChange <= 0 ? '#67C23A' : '#F56C6C'};">${data.debtChange >= 0 ? '+' : ''}${data.debtChange}%</td>
+                    <td><span class="status-badge ${data.debtRatio <= 60 ? 'good' : 'warning'}">${data.debtRatio <= 60 ? '良好' : '关注'}</span></td>
+                </tr>
+            `;
+        }
+
+        function updateSuggestions(data) {
+            const container = document.getElementById('suggestionList');
+            let html = '';
+            
+            if (data.grossMargin >= 30) {
+                html += `
+                    <div class="suggestion-item positive">
+                        <div class="suggestion-icon">✅</div>
+                        <div class="suggestion-content">
+                            <h4>毛利率表现优异</h4>
+                            <p>公司毛利率${data.grossMargin}%高于行业平均28%，成本控制能力较强，建议保持当前策略</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="suggestion-item warning">
+                        <div class="suggestion-icon">⚠️</div>
+                        <div class="suggestion-content">
+                            <h4>毛利率需提升</h4>
+                            <p>公司毛利率${data.grossMargin}%低于行业平均，建议优化产品结构或降低成本</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (data.debtChange > 3) {
+                html += `
+                    <div class="suggestion-item warning">
+                        <div class="suggestion-icon">⚠️</div>
+                        <div class="suggestion-content">
+                            <h4>资产负债率需关注</h4>
+                            <p>资产负债率较去年上升${data.debtChange}个百分点，建议优化资本结构，降低财务风险</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="suggestion-item positive">
+                        <div class="suggestion-icon">✅</div>
+                        <div class="suggestion-content">
+                            <h4>财务结构稳健</h4>
+                            <p>资产负债率${data.debtRatio}%处于合理范围，财务风险可控</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (data.revenueGrowth >= 10) {
+                html += `
+                    <div class="suggestion-item positive">
+                        <div class="suggestion-icon">🚀</div>
+                        <div class="suggestion-content">
+                            <h4>成长潜力较大</h4>
+                            <p>营收增长率${data.revenueGrowth}%领先行业平均，建议加大研发投入扩大竞争优势</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (data.profitGrowth < data.revenueGrowth) {
+                html += `
+                    <div class="suggestion-item warning">
+                        <div class="suggestion-icon">⚠️</div>
+                        <div class="suggestion-content">
+                            <h4>利润增速低于营收增速</h4>
+                            <p>利润增长${data.profitGrowth}%低于营收增长${data.revenueGrowth}%，需关注成本控制</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function updateValuation(data) {
+            document.getElementById('valuationScore').textContent = data.totalScore;
+            
+            let level = '--';
+            if (data.totalScore >= 90) level = 'S级';
+            else if (data.totalScore >= 85) level = 'A级';
+            else if (data.totalScore >= 75) level = 'B级';
+            else if (data.totalScore >= 60) level = 'C级';
+            else level = 'D级';
+            
+            document.getElementById('valuationLevel').textContent = level;
+            document.getElementById('factorProfit').textContent = data.scores.profit;
+            document.getElementById('factorDebt').textContent = data.scores.debt;
+            document.getElementById('factorOperation').textContent = data.scores.operation;
+            document.getElementById('factorGrowth').textContent = data.scores.growth;
+        }
+
+        function simulateExtraction(fileName) {
+            const baseRevenue = 1 + Math.random() * 0.5;
+            const revenue = (baseRevenue * 100).toFixed(2);
+            const revenueGrowth = (8 + Math.random() * 10).toFixed(1);
+            const profit = (revenue * (0.12 + Math.random() * 0.08)).toFixed(0);
+            const profitGrowth = (8 + Math.random() * 12).toFixed(1);
+            const grossMargin = (25 + Math.random() * 15).toFixed(1);
+            const marginChange = (0.5 + Math.random() * 3).toFixed(1);
+            const debtRatio = (40 + Math.random() * 25).toFixed(1);
+            const debtChange = (1 + Math.random() * 4).toFixed(1);
+            
+            const profitScore = Math.min(100, 50 + parseFloat(grossMargin) * 1.5);
+            const debtScore = parseFloat(debtRatio) >= 40 && parseFloat(debtRatio) <= 60 ? 85 : 70;
+            const operationScore = 70 + Math.random() * 20;
+            const growthScore = Math.min(100, 50 + parseFloat(revenueGrowth) * 2);
+            const cashScore = 70 + Math.random() * 20;
+            const esgScore = 75 + Math.random() * 15;
+            
+            const totalScore = (
+                profitScore * 0.25 +
+                debtScore * 0.20 +
+                operationScore * 0.15 +
+                growthScore * 0.20 +
+                cashScore * 0.10 +
+                esgScore * 0.10
+            ).toFixed(2);
+            
+            const scores = {
+                profit: Math.round(profitScore),
+                debt: Math.round(debtScore),
+                operation: Math.round(operationScore),
+                growth: Math.round(growthScore),
+                cash: Math.round(cashScore),
+                esg: Math.round(esgScore)
+            };
+            
+            const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+            const revenueData = months.map(() => (baseRevenue * 0.7 + Math.random() * baseRevenue * 0.5).toFixed(2));
+            const profitData = months.map(() => (parseFloat(revenueData[0]) * (0.12 + Math.random() * 0.08)).toFixed(2));
+            
+            let rank = 'Top 30%';
+            if (totalScore >= 85) rank = 'Top 15%';
+            else if (totalScore >= 75) rank = 'Top 25%';
+            
+            return {
+                companyName: fileName.replace(/\.[^/.]+$/, ''),
+                revenue: revenue,
+                revenueGrowth: parseFloat(revenueGrowth),
+                profit: profit,
+                profitGrowth: parseFloat(profitGrowth),
+                grossMargin: parseFloat(grossMargin),
+                marginChange: parseFloat(marginChange),
+                debtRatio: parseFloat(debtRatio),
+                debtChange: parseFloat(debtChange),
+                totalScore: totalScore,
+                rank: rank,
+                scores: scores,
+                chartData: {
+                    months: months,
+                    revenue: revenueData.map(Number),
+                    profit: profitData.map(Number)
+                }
+            };
+        }
+
+        function processFile(file) {
+            const fileName = file.name;
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            
+            document.getElementById('fileName').textContent = fileName;
+            document.getElementById('fileInfo').textContent = `文件大小：${fileSize}MB | 正在解析...`;
+            document.getElementById('fileStatus').textContent = '⏳ 解析中';
+            document.getElementById('fileStatus').classList.add('processing');
+            document.getElementById('uploadedFile').classList.add('show');
+            
+            showToast('正在解析年报...');
+            
+            setTimeout(() => {
+                extractedData = simulateExtraction(fileName);
+                
+                document.getElementById('fileInfo').textContent = `已提取 28 项财务指标 | 解析时间：2.8秒`;
+                document.getElementById('fileStatus').textContent = '✓ 已解析';
+                document.getElementById('fileStatus').classList.remove('processing');
+                
+                updateMetrics(extractedData);
+                updateDataTable(extractedData);
+                updateSuggestions(extractedData);
+                updateValuation(extractedData);
+                
+                document.getElementById('trendChartArea').querySelector('.empty-state').style.display = 'none';
+                document.getElementById('radarChartArea').querySelector('.empty-state').style.display = 'none';
+                document.getElementById('valuationChartArea').querySelector('.empty-state').style.display = 'none';
+                
+                initTrendChart(extractedData.chartData);
+                initRadarChart(extractedData.scores);
+                initValuationChart(extractedData.scores);
+                
+                showToast('年报解析成功！数据已同步到分析面板');
+            }, 2500);
+        }
+
+        const dashboard = document.getElementById('dashboardPreview');
+        const wrapper = document.querySelector('.dashboard-preview');
+
+        wrapper.addEventListener('mousemove', (e) => {
+            const rect = wrapper.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 20;
+            const rotateY = (centerX - x) / 20;
+            dashboard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            dashboard.style.transform = 'rotateX(0) rotateY(0)';
+        });
+
+        setTimeout(() => {
+            document.querySelectorAll('.light-beam').forEach(beam => {
+                beam.classList.add('visible');
+            });
+        }, 100);
+
+        document.getElementById('startAnalysis').addEventListener('click', () => {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('analysisPage').classList.add('active');
+        });
+
+        document.getElementById('backToHome').addEventListener('click', () => {
+            document.getElementById('analysisPage').classList.remove('active');
+            document.getElementById('landingPage').style.display = 'flex';
+        });
+
+        document.getElementById('newAnalysis').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('exportReport').addEventListener('click', () => {
+            if (extractedData) {
+                showToast('报告导出功能开发中...');
+            } else {
+                showToast('请先上传年报文件');
+            }
+        });
+
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadSection.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                processFile(e.target.files[0]);
+            }
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        dashboard.innerHTML = `
+            <div style="width: 240px; height: 100%; background: rgba(30, 30, 30, 0.5); border-right: 1px solid rgba(255, 255, 255, 0.05); padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #409EFF, #00CED1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📊</div>
+                    <span style="font-size: 18px; font-weight: 700;">年报分析</span>
+                </div>
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">📈 仪表盘</div>
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">📁 数据导入</div>
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">📊 财务分析</div>
+                <div style="color: #666; font-size: 14px; margin-bottom: 10px;">🎯 行业对比</div>
+                <div style="color: #666; font-size: 14px;">⭐ 价值评估</div>
+            </div>
+            <div style="flex: 1; padding: 24px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <span style="font-size: 20px; font-weight: 600;">财务数据分析</span>
+                    <button style="padding: 8px 16px; background: linear-gradient(135deg, #409EFF, #00CED1); border: none; border-radius: 6px; color: white; font-size: 13px; cursor: pointer;">新建分析</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px;">
+                        <div style="color: #888; font-size: 12px; margin-bottom: 8px;">营业收入</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #409EFF;">1.25亿</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px;">
+                        <div style="color: #888; font-size: 12px; margin-bottom: 8px;">净利润</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #67C23A;">1850万</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px;">
+                        <div style="color: #888; font-size: 12px; margin-bottom: 8px;">毛利率</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #E6A23C;">35.2%</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px;">
+                        <div style="color: #888; font-size: 12px; margin-bottom: 8px;">综合评分</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #F56C6C;">82.25</div>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 20px; height: 200px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px;">
+                    图表预览区域
+                </div>
+            </div>
+        `;
+    </script>
+</body>
+</html>

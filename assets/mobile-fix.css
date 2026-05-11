@@ -1,1 +1,54 @@
-/* 暂时移除所有样式，先确认原始状态 */
+/* 移动端强制显示所有按钮 */
+@media screen and (max-width: 768px) {
+  /* 确保页面宽度正确 */
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* 强制所有元素可见 */
+  button, div, span {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: inline-flex !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* 强制容器宽度为100% */
+  div[class] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 强制flex布局正常工作 */
+  div[class*="flex"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* 强制按钮容器显示 */
+  div:has(button) {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* 确保学习模式区域显示 */
+  div[data-testid*="mode"],
+  div[class*="mode"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  /* 确保顺序/随机按钮所在容器显示 */
+  div.bg-gray-100 {
+    display: flex !important;
+    gap: 4px !important;
+    padding: 4px !important;
+  }
+}

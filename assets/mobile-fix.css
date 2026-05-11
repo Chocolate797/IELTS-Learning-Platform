@@ -1,140 +1,92 @@
 @media screen and (max-width: 768px) {
   html, body, #root {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
-  div[class*="header"] {
-    position: relative !important;
-    width: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 8px 16px !important;
-    gap: 8px !important;
-    flex-wrap: wrap !important;
-  }
-
-  div[class*="header"] > div:first-child {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    flex-shrink: 0 !important;
-  }
-
-  div[class*="header"] > div:last-child {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    flex-shrink: 0 !important;
-    margin-left: auto !important;
-    z-index: 100 !important;
-  }
-
-  div[class*="header"] + div {
-    width: 100% !important;
-    padding: 0 16px !important;
-  }
-
-  #root div[data-testid*="mode"],
-  #root div[class*="mode"] {
+  div[data-testid*="mode"],
+  div[class*="mode"] {
     display: flex !important;
     flex-direction: row !important;
-    align-items: flex-start !important;
+    align-items: center !important;
     justify-content: space-between !important;
     gap: 12px !important;
     width: 100% !important;
     padding: 8px 16px !important;
     flex-wrap: wrap !important;
-    box-sizing: border-box !important;
   }
 
-  #root div[data-testid*="mode"] > div:first-child,
-  #root div[class*="mode"] > div:first-child {
+  div[data-testid*="mode"] > div:first-child,
+  div[class*="mode"] > div:first-child {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 4px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
     flex-shrink: 0 !important;
   }
 
-  #root div[data-testid*="mode"] > div:last-child,
-  #root div[class*="mode"] > div:last-child {
+  div[data-testid*="mode"] > div:last-child,
+  div[class*="mode"] > div:last-child {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-    gap: 6px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 1 !important;
+    justify-content: flex-end !important;
+    flex-wrap: wrap !important;
+  }
+
+  div.bg-gray-100.rounded-xl.p-1 {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    min-width: 120px !important;
+  }
+
+  div.bg-gray-100.rounded-xl.p-1 > button {
+    flex: 1 !important;
+    min-width: 50px !important;
+    padding: 5px 8px !important;
+  }
+
+  div[data-testid*="mode"] > div:last-child > button,
+  div[class*="mode"] > div:last-child > button {
+    flex-shrink: 0 !important;
+    padding: 8px 12px !important;
+    white-space: nowrap !important;
+  }
+
+  div[class*="list-item"],
+  div[class*="word-item"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 12px !important;
+    gap: 8px !important;
+  }
+
+  div[class*="list-item"] > div:first-child,
+  div[class*="word-item"] > div:first-child {
     flex: 1 !important;
     min-width: 0 !important;
   }
 
-  #root div.bg-gray-100.rounded-xl.p-1 {
+  div[class*="list-item"] > div:last-child,
+  div[class*="word-item"] > div:last-child {
     display: flex !important;
-    flex-direction: column !important;
+    align-items: center !important;
     gap: 4px !important;
-    padding: 4px !important;
-    min-width: 70px !important;
-    width: auto !important;
-    box-sizing: border-box !important;
-  }
-
-  #root div.bg-gray-100.rounded-xl.p-1 > button {
-    width: 100% !important;
-    min-width: 60px !important;
-    padding: 5px 8px !important;
-    box-sizing: border-box !important;
-  }
-
-  #root div[data-testid*="mode"] > div:last-child > div,
-  #root div[class*="mode"] > div:last-child > div {
-    display: flex !important;
-    gap: 8px !important;
-    width: 100% !important;
-    justify-content: flex-end !important;
-    box-sizing: border-box !important;
-  }
-
-  #root div[data-testid*="mode"] > div:last-child > div > button,
-  #root div[class*="mode"] > div:last-child > div > button {
     flex-shrink: 0 !important;
-    padding: 8px 14px !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
   }
 
-  #root div[data-testid*="mode"] > div:last-child > div:nth-child(1) {
-    display: flex !important;
-    gap: 8px !important;
-    justify-content: flex-end !important;
-  }
-
-  #root div[data-testid*="mode"] > div:last-child > div:nth-child(2) {
-    display: flex !important;
-    gap: 8px !important;
-    justify-content: flex-end !important;
-  }
-
-  @media screen and (max-width: 480px) {
-    #root div[data-testid*="mode"],
-    #root div[class*="mode"] {
-      padding: 6px 12px !important;
-      gap: 8px !important;
-    }
-
-    #root div.bg-gray-100.rounded-xl.p-1 {
-      min-width: 60px !important;
-    }
-
-    #root div.bg-gray-100.rounded-xl.p-1 > button {
-      padding: 4px 6px !important;
-      font-size: 12px !important;
-    }
-
-    #root div[data-testid*="mode"] > div:last-child > div > button,
-    #root div[class*="mode"] > div:last-child > div > button {
-      padding: 6px 10px !important;
-      font-size: 12px !important;
-    }
+  div[class*="list-item"] > div:last-child > button,
+  div[class*="word-item"] > div:last-child > button {
+    flex-shrink: 0 !important;
+    padding: 6px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
   }
 }

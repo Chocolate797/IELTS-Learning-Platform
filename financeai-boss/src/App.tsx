@@ -66,41 +66,79 @@ function App() {
   const parseExcelData = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = e.target?.result;
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      try {
+        const data = e.target?.result;
+        let workbook;
+        
+        if (file.name.endsWith('.csv')) {
+          const text = new TextDecoder().decode(data as ArrayBuffer);
+          const lines = text.split('\n').filter(line => line.trim());
+          const headers = lines[0].split(',').map(h => h.trim());
+          
+          const jsonData = lines.slice(1).map(line => {
+            const values = line.split(',');
+            const row: any = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index]?.trim() || '';
+            });
+            return row;
+          }).filter(row => Object.values(row).some(v => v !== ''));
+          
+          workbook = jsonData;
+        } else {
+          workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          workbook = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        }
 
-      const parsedRecords: FinancialRecord[] = jsonData.map((row: any, index) => {
-        const dateValue = row['日期'] || row['date'] || row['时间'] || row['Time'];
-        const typeValue = row['类型'] || row['type'] || row['收支'] || '';
-        const categoryValue = row['类别'] || row['category'] || row['科目'] || row['项目'] || '';
-        const amountValue = row['金额'] || row['amount'] || row['数额'] || row['Money'] || 0;
-        const descValue = row['描述'] || row['description'] || row['摘要'] || row['remark'] || row['备注'] || '';
+        const parsedRecords: FinancialRecord[] = workbook.map((row: any, index) => {
+          const dateValue = row['日期'] || row['date'] || row['时间'] || row['Time'] || row['日期时间'];
+          const typeValue = row['类型'] || row['type'] || row['收支'] || row['收/支'] || '';
+          const categoryValue = row['类别'] || row['category'] || row['科目'] || row['项目'] || row['名称'] || '';
+          const amountValue = row['金额'] || row['amount'] || row['数额'] || row['Money'] || row['数额'] || 0;
+          const descValue = row['描述'] || row['description'] || row['摘要'] || row['remark'] || row['备注'] || row['说明'] || '';
 
-        const type: 'income' | 'expense' = String(typeValue).toLowerCase().includes('收') || String(typeValue).toLowerCase().includes('income')
-          ? 'income'
-          : 'expense';
+          let type: 'income' | 'expense' = 'expense';
+          const typeStr = String(typeValue).toLowerCase();
+          if (typeStr.includes('收') || typeStr.includes('income') || typeStr.includes('入')) {
+            type = 'income';
+          }
 
-        return {
-          id: `record-${index}`,
-          date: dateValue ? dayjs(dateValue).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-          type,
-          category: String(categoryValue),
-          amount: Math.abs(Number(amountValue)) || 0,
-          description: String(descValue),
-        };
-      }).filter(r => r.amount > 0);
+          const amount = Math.abs(Number(String(amountValue).replace(/[^\d.-]/g, ''))) || 0;
+          let formattedDate = dayjs().format('YYYY-MM-DD');
+          if (dateValue) {
+            const parsed = dayjs(dateValue);
+            if (parsed.isValid()) {
+              formattedDate = parsed.format('YYYY-MM-DD');
+            }
+          }
 
-      setRecords(parsedRecords);
-      calculateKPIs(parsedRecords);
-      setHasData(true);
+          return {
+            id: `record-${index}`,
+            date: formattedDate,
+            type,
+            category: String(categoryValue),
+            amount,
+            description: String(descValue),
+          };
+        }).filter(r => r.amount > 0);
 
-      const totalIncome = parsedRecords.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
-      const totalExpense = parsedRecords.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
+        setRecords(parsedRecords);
+        calculateKPIs(parsedRecords);
+        setHasData(true);
 
-      addAIMessage(`数据解析完成！共读取 ${parsedRecords.length} 条记录。收入总计 ¥${totalIncome.toLocaleString()}，支出总计 ¥${totalExpense.toLocaleString()}。我可以为您分析这些数据，请告诉我您想了解什么。`);
+        console.log('Parsed records:', parsedRecords.length, parsedRecords.slice(0, 3));
+        console.log('Income records:', parsedRecords.filter(r => r.type === 'income').length);
+        console.log('Expense records:', parsedRecords.filter(r => r.type === 'expense').length);
+
+        const totalIncome = parsedRecords.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
+        const totalExpense = parsedRecords.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
+
+        addAIMessage(`数据解析完成！共读取 ${parsedRecords.length} 条记录。收入总计 ¥${totalIncome.toLocaleString()}，支出总计 ¥${totalExpense.toLocaleString()}。我可以为您分析这些数据，请告诉我您想了解什么。`);
+      } catch (error) {
+        console.error('Parse error:', error);
+        addAIMessage(`数据解析失败，请检查文件格式是否正确。`);
+      }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -519,7 +557,10 @@ function App() {
             <Upload size={18} />
             上传数据
           </button>
-          <button className="btn btn-secondary">
+          <button className="btn btn-secondary" onClick={() => {
+            console.log('Current records:', records);
+            console.log('Current KPI:', kpiData);
+          }}>
             <Settings size={18} />
           </button>
         </div>
@@ -613,6 +654,12 @@ function App() {
                 <div className="kpi-trend" style={{ color: '#60a5fa' }}>
                   毛利率健康
                 </div>
+              </div>
+            </section>
+
+            <section style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(52, 211, 153, 0.1)', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.3)' }}>
+              <div style={{ color: '#34d399', fontSize: '0.8rem' }}>
+                ✅ 数据加载成功 | 共 {records.length} 条记录 | 收入 {records.filter(r => r.type === 'income').length} 条 | 支出 {records.filter(r => r.type === 'expense').length} 条
               </div>
             </section>
 

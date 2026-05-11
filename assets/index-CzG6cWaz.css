@@ -77,3 +77,68 @@
     white-space: nowrap !important;
   }
 }
+
+/* ============ 移动端修复 ============ */
+@media screen and (max-width: 768px) {
+  /* 确保页面宽度正确 */
+  html, body, #root {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* 强制所有元素可见 */
+  button {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: inline-flex !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    position: relative !important;
+    z-index: 100 !important;
+  }
+
+  /* 强制所有容器显示 */
+  div {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+    position: relative !important;
+  }
+
+  /* 强制flex容器 */
+  div[class*="flex"],
+  div[data-testid*="mode"],
+  div[class*="mode"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 8px 16px !important;
+  }
+
+  /* 强制顺序/随机按钮容器 */
+  div.bg-gray-100.rounded-xl.p-1 {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    min-width: 100px !important;
+  }
+
+  /* 强制学习模式按钮组 */
+  div[data-testid*="mode"] > div,
+  div[class*="mode"] > div {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* 确保单词列表项右侧按钮显示 */
+  div[class*="list"] > div > div:last-child,
+  div[class*="List"] > div > div:last-child {
+    display: flex !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+}
